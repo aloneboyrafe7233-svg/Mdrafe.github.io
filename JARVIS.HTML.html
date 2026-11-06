@@ -1,0 +1,66 @@
+‎<!DOCTYPE html>
+‎<html lang="bn">
+‎<head>
+‎    <meta charset="UTF-8">
+‎    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+‎    <title>জার্ভিস সহকারী</title>
+‎    <style>
+‎        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background-color: #1a1a1a; color: white; margin: 0; }
+‎        button { padding: 15px 30px; font-size: 18px; border-radius: 30px; border: none; background-color: #00bcd4; color: white; cursor: pointer; margin-top: 20px; }
+‎        button:active { transform: scale(0.95); }
+‎        #output { margin-top: 20px; max-width: 80%; text-align: center; font-size: 20px; }
+‎    </style>
+‎</head>
+‎<body>
+‎    <h1>জার্ভিস সহকারী</h1>
+‎    <button id="btn">কথা বলুন</button>
+‎    <div id="output">শুনছি...</div>
+‎
+‎    <script>
+‎        const btn = document.getElementById('btn');
+‎        const output = document.getElementById('output');
+‎        const API_KEY = 'AQ.Ab8RN6J4vpKzOCtVPOyEfNrcT1CRxm_BAWaKN7OIXzv1chbJGA
+‎
+‎        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+‎        const recognition = new SpeechRecognition();
+‎        recognition.lang = 'bn-BD';
+‎
+‎        btn.addEventListener('click', () => {
+‎            recognition.start();
+‎            output.innerText = "বলছি...";
+‎        });
+‎
+‎        recognition.onresult = async (event) => {
+‎            const text = event.results[0][0].transcript;
+‎            output.innerText = "আপনি বলেছেন: " + text;
+‎            await getAIResponse(text);
+‎        };
+‎
+‎        async function getAIResponse(userText) {
+‎            try {
+‎                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+‎                const response = await fetch(url, {
+‎                    method: 'POST',
+‎                    headers: { 'Content-Type': 'application/json' },
+‎                    body: JSON.stringify({
+‎                        contents: [{ parts: [{ text: userText }] }]
+‎                    })
+‎                });
+‎                const data = await response.json();
+‎                const reply = data.candidates[0].content.parts[0].text;
+‎                speak(reply);
+‎            } catch (error) {
+‎                console.error(error);
+‎                speak("দুঃখিত, এই মুহূর্তে উত্তর দেওয়া যাচ্ছে না।");
+‎            }
+‎        }
+‎
+‎        function speak(text) {
+‎            output.innerText = "জার্ভিস: " + text;
+‎            const utterance = new SpeechSynthesisUtterance(text);
+‎            utterance.lang = 'bn-BD';
+‎            window.speechSynthesis.speak(utterance);
+‎        }
+‎    </script>
+‎</body>
+‎</html>
